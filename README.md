@@ -34,12 +34,24 @@ used under Linux as a normal HCI device, using the traditional Bluez stack.
 
 1. Download and install the requirements for SolidRun's Newt BSP.
 
-You will need to download the Apache Newt tool, OpenOCD and gcc-arm-none-eabi, as documented in the [SolidRun BSP for NINA-B1 module on iMX8MQ SOM](https://mynewt.apache.org/latest/get_started/index.html).
+You will need to download and install:
+- the Apache Newt tool, as documented in the [mynewt documentation](https://mynewt.apache.org/latest/get_started/index.html)
+- an embedded toolchain, e.g. `apt install gcc-arm-embedded`
+- this fork of [openOCD for i.MX SoCs](https://github.com/SolidRun/openocd/blob/master/doc/BUILD-IMX.md).
+
+As a shortcut and to avoid installing all development files to the target systems, a [fork of the mynewt docker image](https://github.com/Josua-SR/newt-docker) built for arm64 is available at *quay.io/josua-sr/newt:latest*. For the steps below, installing an alias for the *newt* command to docker is sufficient:
+
+```no-highlight
+sudo apt install docker.io
+sudo usermod -a -G docker <username>
+# log out and back in
+alias newt='docker run -e NEWT_HOST=$(uname) $ti --rm --device=/dev/bus/usb --privileged -v $(pwd):/workspace -w /workspace quay.io/josua-sr/newt:latest /newt'
+```
 
 2. Download the SolidRun BSP, Apache Mynewt Core package, and Nimble (executed from the mynewt-sr-blehci directory).
 
 ```no-highlight
-newt install
+newt upgrade
 ```
 
 3. Build the Newt bootloader for the NINA-B1 using the "nina-b1_boot" target
@@ -57,7 +69,7 @@ newt build blehci
 newt create-image blehci 0.0.1
 ```
 
-5. load the bootloader and application to the NINA-B1. *this is stored in the onboard flash and only needs to be done once*
+5. load the bootloader and application to the NINA-B1. *this is stored in the onboard flash and only needs to be done just once*
 (executed from the mynewt-sr-blehci directory).
 
 ```no-highlight
@@ -70,6 +82,7 @@ The device should now be ready to be initialized under Linux.
 
 ```no-highlight
 sudo btattach -B /dev/ttymxc3 -S 1000000 -N
+# Note: btattach is available with bluez on debian
 ```
 
 The hci interface should now be available.
