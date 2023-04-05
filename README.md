@@ -27,8 +27,9 @@ The firmware is based on Apache mynewt OS with the Apache NimBLE Application pro
 Supported Products:
 
 - i.MX8MQ SoM
-  - uBlox Nina-B1
+  - u-blox Nina-B1
 - SolidSense N6
+  - u-blox Nina-B1
   - Fujitsu FWM7BLZ22
 
 ## Build Firmware from Source
@@ -63,7 +64,8 @@ Either:
 
 First, choose a target:
 
-- i.MX8MQ SoM (with Nina-B1): `imx8mqsom-nina-b1`
+- i.MX8MQ SoM (with u-blox Nina-B1): `imx8mqsom-nina-b1`
+- SolidSense N6 with u-blox Nina-B1: `ssn6-nina-b111`
 - SolidSense N6 with Fujitsu FWM7BLZ22: `ssn6-fwm7blz22`
 
 Use substitute in the instructions below "imx8mq-nina-b1" with the correct target name.
