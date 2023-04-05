@@ -30,6 +30,7 @@ Supported Products:
   - u-blox Nina-B1
 - SolidSense N6
   - u-blox Nina-B1
+  - u-blox Nina-B3
   - Fujitsu FWM7BLZ22
 
 ## Build Firmware from Source
@@ -66,6 +67,7 @@ First, choose a target:
 
 - i.MX8MQ SoM (with u-blox Nina-B1): `imx8mqsom-nina-b1`
 - SolidSense N6 with u-blox Nina-B1: `ssn6-nina-b111`
+- SolidSense N6 with u-blox Nina-B3: `ssn6-nina-b301`
 - SolidSense N6 with Fujitsu FWM7BLZ22: `ssn6-fwm7blz22`
 
 Use substitute in the instructions below "imx8mq-nina-b1" with the correct target name.
@@ -108,6 +110,18 @@ To compile & install openocd from source-code:
        sudo make install
 
 ### Install firmware
+
+0. Substitute MCU-specific flash locations for loader & application in steps 6 & 7:
+
+   - Nina-B1:
+     - boot: `0x0000`
+     - application: `0x8000`
+   - Nina-B3:
+     - boot: `0x0000`
+     - application: `0xc000`
+   - FWM7BLZ22:
+     - boot: `0x0000`
+     - application: `0x8000`
 
 1. Generate platform-specific openocd configuration
 
@@ -173,11 +187,15 @@ To compile & install openocd from source-code:
        ...
        ** Programming Finished **
 
+**Note: Specify correct offset for target MCU (0x0000)!**
+
 7. program application
 
        > program /home/debian/nimble.img 0x8000
        ...
        ** Programming Finished **
+
+**Note: Specify correct offset for target MCU (0x0000)!**
 
 8. restart MCU
 
