@@ -1,6 +1,5 @@
-pkg.name: "targets/nina-b1_boot"
+pkg.name: "targets/imx8mqsom-nina-b1_blehci"
 pkg.type: target
 pkg.description: 
 pkg.author: 
 pkg.homepage: 
-

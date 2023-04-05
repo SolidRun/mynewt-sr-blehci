@@ -19,64 +19,169 @@
 #
 -->
 
-### Overview
+## Overview
 
-This is a mynewt project skeleton for quickly and easily building the blehci
-firmware that can be flashed to the SolidRun iMX8MQ SOM's NINA-B1 chip.  This
-firmware allows the NINA-B1 to act like a normal HCI device and is compatible
-with newer Bluez stacks.
+This is a project for building BLE firmware that can be flashed to the Wireless MCUs available on some SolidRun products.
+The firmware is based on Apache mynewt OS with the Apache NimBLE Application providing BLE functionality and HCI protocol support.
 
-### Building
+Supported Products:
 
-Apache blehci contains an example Apache Mynewt Nimble application called blehci.
-When loaded on compatible hardware this application allows the NINA-B1 to be 
-used under Linux as a normal HCI device, using the traditional Bluez stack.
+- i.MX8MQ SoM
+  - uBlox Nina-B1
+- SolidSense N6
+  - Fujitsu FWM7BLZ22
 
-1. Download and install the requirements for SolidRun's Newt BSP.
+## Build Firmware from Source
 
-You will need to download and install:
-- the Apache Newt tool, as documented in the [mynewt documentation](https://mynewt.apache.org/latest/get_started/index.html)
-- an embedded toolchain, e.g. `apt install gcc-arm-embedded`
-- this fork of [openOCD for i.MX SoCs](https://github.com/SolidRun/openocd/blob/master/doc/BUILD-IMX.md).
+### Install Build Dependencies and Tools
 
-As a shortcut and to avoid installing all development files to the target systems, a [fork of the mynewt docker image](https://github.com/Josua-SR/newt-docker) built for arm64 is available at *quay.io/josua-sr/newt:latest*. For the steps below, installing an alias for the *newt* command to docker is sufficient:
+### Install ARM embedded toolchain
 
-```no-highlight
-sudo apt install docker.io
-sudo usermod -a -G docker <username>
-# log out and back in
-alias newt='docker run -e NEWT_HOST=$(uname) $ti --rm --device=/dev/bus/usb --privileged -v $(pwd):/workspace -w /workspace quay.io/josua-sr/newt:latest /newt'
-```
+    sudo apt-get install gcc-arm-none-eabi
 
-2. Download the SolidRun BSP, Apache Mynewt Core package, and Nimble (executed from the mynewt-sr-blehci directory).
+### Install Apache mynewt build tool
 
-```no-highlight
-newt upgrade
-```
+Either:
 
-3. Build the Newt bootloader for the NINA-B1 using the "nina-b1_boot" target
-(executed from the mynewt-sr-blehci directory).
+- Install natively according to [mynewt documentation](https://mynewt.apache.org/latest/get_started/index.html).
+- Install with docker as a shortcut
 
-```no-highlight
-newt build nina-b1_boot
-```
+      sudo apt install docker.io
+      sudo usermod -a -G docker <username>
+      # log out and back in
+      alias newt='docker run -e NEWT_HOST=$(uname) $ti --rm --device=/dev/bus/usb --privileged -v $(pwd):/workspace -w /workspace quay.io/josua-sr/newt:latest /newt'
 
-4. Build the blehci application for the NINA-B1 using the "blehci" target
-(executed from the mynewt-sr-blehci directory).
 
-```no-highlight
-newt build blehci
-newt create-image blehci 0.0.1
-```
+### Download Sources
 
-5. load the bootloader and application to the NINA-B1. *this is stored in the onboard flash and only needs to be done just once*
-(executed from the mynewt-sr-blehci directory).
+    git clone https://github.com/SolidRun/mynewt-sr-blehci
+    cd mynewt-sr-blehci
 
-```no-highlight
-newt load nina-b1_boot
-newt load blehci
-```
-### Initializing under Linux 
+    newt upgrade
+
+### Compile
+
+First, choose a target:
+
+- i.MX8MQ SoM (with Nina-B1): `imx8mqsom-nina-b1`
+- SolidSense N6 with Fujitsu FWM7BLZ22: `ssn6-fwm7blz22`
+
+Use substitute in the instructions below "imx8mq-nina-b1" with the correct target name.
+
+Then compile bootloader & application:
+
+    newt build imx8mqsom-nina-b1_boot
+    newt build imx8mqsom-nina-b1_blehci
+
+Finally create an application image (adding header with version number).
+Note that the version number here is a user choice and has no functional impact.
+
+    newt create-image imx8mqsom-nina-b1_blehci 0.0.1
+
+## Install firmware
+
+### Install openocd
+
+OpenOCD is a debugger and programmer that will be used for installing firmware to the MCU - using the SWD protocol.
+
+To compile & install openocd from source-code:
+
+1. install compilers and library dependencies
+
+       sudo apt-get install build-essential git autoconf libtool make pkg-config libusb-1.0-0 libusb-1.0-0-dev libgpiod-dev
+
+2. download openocd source-code
+
+       git clone https://git.code.sf.net/p/openocd/code openocd
+       cd openocd
+       git reset --hard v0.12.0
+
+3. compile
+
+       ./configure --prefix=/usr --sysconfdir=/etc --enable-imx_gpio --enable-linuxgpiod --disable-sysfsgpio --disable-stlink --disable-ti-icdi --disable-ulink --disable-usb-blaster-2 --disable-vsllink --disable-xds110 --disable-osbdm --disable-opendous --disable-aice --disable-usbprog --disable-rlink --disable-armjtagew --disable-cmsis-dap --disable-kitprog --disable-usb-blaster --disable-presto --disable-openjtag --disable-jlink --disable-buspirate --disable-esp-usb-jtag --disable-cmsis-dap-v2 --disable-ft232r --disable-ftdi
+       make -j2
+
+4. install
+
+       sudo make install
+
+### Install firmware
+
+1. Generate platform-specific openocd configuration
+
+   - i.MX8MQ SoM
+
+         source [find interface/imx-native.cfg]
+         transport select swd
+         set WORKAREASIZE 0
+         source [find target/nrf52.cfg]
+         imx_gpio_swd_nums 8 66
+
+   - SolidSense N6: Sink 1
+
+         source [find interface/imx-native.cfg]
+         transport select swd
+         set WORKAREASIZE 0
+         source [find target/nrf52.cfg]
+         imx_gpio_swd_nums 82 81
+
+   - SolidSense N6: Sink 2
+
+         source [find interface/imx-native.cfg]
+         transport select swd
+         set WORKAREASIZE 0
+         source [find target/nrf52.cfg]
+         imx_gpio_swd_nums 59 125
+
+2. Launch OpenOCD (server process)
+
+       sudo openocd --file ./openocd.cfg
+
+3. Connect to OpenOCD console using telnet (in separate console)
+
+       telnet 127.0.0.1 4444
+       Trying 127.0.0.1...
+       Connected to 127.0.0.1.
+       Escape character is '^]'.
+       Open On-Chip Debugger
+       >
+
+4. Check MCU status
+
+       > targets
+           TargetName         Type       Endian TapName            State
+       --  ------------------ ---------- ------ ------------------ ------------
+        0* nrf52.cpu          cortex_m   little nrf52.cpu          running
+
+**If the table shows State as "running" - then the MCU must be stopped** by running the halt command:
+
+       > halt
+       [nrf52.cpu] halted due to debug-request, current mode: Thread
+       xPSR: 0x21000000 pc: 0x00012c68 psp: 0x20000288
+
+5. Erase flash
+
+       > nrf5 mass_erase
+       RF52833-xxAA(build code: A0) 512kB Flash, 128kB RAM
+       Mass erase completed.
+
+6. program loader
+
+       > program /home/debian/boot.elf.bin 0x0000
+       ...
+       ** Programming Finished **
+
+7. program application
+
+       > program /home/debian/nimble.img 0x8000
+       ...
+       ** Programming Finished **
+
+8. restart MCU
+
+       > reset
+
+## Initialise BLE HCI Device in Linux
 
 The device should now be ready to be initialized under Linux.
 
