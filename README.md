@@ -32,6 +32,9 @@ Supported Products:
   - u-blox Nina-B1
   - u-blox Nina-B3
   - Fujitsu FWM7BLZ22
+- SolidSense N8
+  - u-blox Nina-B1
+  - Fujitsu FWM7BLZ22
 
 ## Build Firmware from Source
 
@@ -65,10 +68,16 @@ Either:
 
 First, choose a target:
 
-- i.MX8MQ SoM (with u-blox Nina-B1): `imx8mqsom-nina-b1`
-- SolidSense N6 with u-blox Nina-B1: `ssn6-nina-b111`
-- SolidSense N6 with u-blox Nina-B3: `ssn6-nina-b301`
-- SolidSense N6 with Fujitsu FWM7BLZ22: `ssn6-fwm7blz22`
+- `imx8mqsom-nina-b1`
+  - i.MX8MQ SoM
+- `ssn6-nina-b111`
+  - SolidSense N6
+  - SolidSense N8
+- `ssn6-nina-b301`
+  - SolidSense N6
+- `ssn6-fwm7blz22`
+  - SolidSense N6
+  - SolidSense N8
 
 Use substitute in the instructions below "imx8mq-nina-b1" with the correct target name.
 
@@ -148,6 +157,16 @@ To compile & install openocd from source-code:
          set WORKAREASIZE 0
          source [find target/nrf52.cfg]
          imx_gpio_swd_nums 59 125
+
+   - SolidSense N8:
+
+         source [find interface/imx-native.cfg]
+         transport select swd
+         set WORKAREASIZE 0
+         source [find target/nrf52.cfg]
+         imx_gpio_peripheral_base 0x30200000
+         imx_gpio_speed_coeffs 50000 50
+         imx_gpio_swd_nums 14 15
 
 2. Launch OpenOCD (server process)
 
