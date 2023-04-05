@@ -183,6 +183,27 @@ To compile & install openocd from source-code:
 
        > reset
 
+## Program MAC Address
+
+Firmware expects a permanent MAC address stored in UICR registers.
+
+MAC can be programmed with OpenOCD using the instructions above but stopping before step 5.
+Then:
+
+1. read existing UICR registers (on openocd console)
+
+       flash read_bank 1 /home/debian/mac
+
+2. write mac address as binary data to the UICR register dumpfile (on linux console)
+
+       # 75:c1:1d:09:1c:07
+       printf '\x07\x1c\x09\x1d\xc1\x75' | dd of=/home/debian/mac bs=1 seek=128 count=6 conv=notrunc
+
+2. write mac address to UICR registers (on openocd console)
+
+       > flash erase_sector 1 0 last
+       > flash write_bank 1 /home/debian/mac
+
 ## Initialise BLE HCI Device in Linux
 
 The device should now be ready to be initialized under Linux.
