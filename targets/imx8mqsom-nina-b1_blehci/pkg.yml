@@ -3,3 +3,17 @@ pkg.type: target
 pkg.description: 
 pkg.author: 
 pkg.homepage: 
+
+pkg.cflags:
+    # newt 1.11: GCC 13.2 complains about error below, downgrade error to warning
+    # Error: repos/apache-mynewt-core/hw/mcu/nordic/nrf52xxx/src/hal_timer.c: In function 'hal_timer_stop':
+    # repos/apache-mynewt-core/hw/mcu/nordic/nrf52xxx/src/hal_timer.c:933:17: error: 'entry' may be used uninitialized [-Werror=maybe-uninitialized]
+    #   933 |                 nrf_timer_set_ocmp((struct nrf52_hal_timer *)entry->bsp_timer,
+    #       |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #   934 |                                    entry->expiry);
+    #       |                                    ~~~~~~~~~~~~~~
+    # repos/apache-mynewt-core/hw/mcu/nordic/nrf52xxx/src/hal_timer.c:911:23: note: 'entry' was declared here
+    #   911 |     struct hal_timer *entry;
+    #       |                       ^~~~~
+    # cc1: all warnings being treated as errors
+    - "-Wno-maybe-uninitialized"

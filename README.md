@@ -1,3 +1,6 @@
+
+
+  Note:
 <!--
 #
 # Licensed to the Apache Software Foundation (ASF) under one
@@ -49,6 +52,38 @@ Supported Products:
 Either:
 
 - Install natively according to [mynewt documentation](https://mynewt.apache.org/latest/get_started/index.html).
+  Note: Download links and version numbers in mynewt documentation are outdated. Please instead follow the steps below:
+
+  1. Download "newt" tool v1.11:
+
+     ```
+     wget https://archive.apache.org/dist/mynewt/apache-mynewt-1.11.0/apache-mynewt-newt-bin-linux-1.11.0.tgz
+     tar --strip-components=1 -xvf apache-mynewt-newt-bin-linux-1.11.0.tgz apache-mynewt-newt-bin-linux-1.11.0/newt
+     ./newt version
+     sudo install -v -m755 -o root -g root newt /usr/local/bin/
+     rm newt
+     ```
+
+   2. Download a native compiler targeting your host PC
+
+      - On Debian / Ubuntu the native distro-compilers can be used:
+
+            sudo apt-get update && sudo apt-get install build-essential
+
+      - On openSUSE/SLE the native distro-compilers can be used:
+
+            sudo zypper install -t pattern devel_C_C++
+
+   3. Download a Cross-Compiler targeting ARM MCUs:
+
+      ```
+      wget https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi.tar.xz
+      tar -xvf arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi.tar.xz
+      export PATH="$PWD/arm-gnu-toolchain-13.2.Rel1-x86_64-arm-none-eabi/bin:$PATH"
+      ```
+
+      Note: The cross-compiler path should be exported each time a new terminal is opened for development purposes.
+
 - Install with docker as a shortcut
 
       sudo apt install docker.io
